@@ -22,16 +22,21 @@ require.define({
         var ms = curr - (debug[name] || curr);
         debug[name] = curr;
 
-        fmt = name
-          + ' '
+        fmt = "%c" + name
+          + ' %c'
           + fmt
-          + ' +' + debug.humanize(ms);
+          + ' %c+' + debug.humanize(ms);
+
+        var args = Array.prototype.slice.call(arguments);
+        args.push("color:red; font-weight: bold;");
+        args.push("color:green;");
+        args.push("color:blue;");
 
         // This hackery is required for IE8
         // where `console.log` doesn't have 'apply'
         window.console
           && console.log
-          && Function.prototype.apply.call(console.log, console, arguments);
+          && Function.prototype.apply.call(console.log, console, args);
       }
     }
 
