@@ -1,0 +1,5 @@
+{
+  "name": "debug",
+  "version": "0.7.5",
+  "scripts": ["debug-brunch.js"]
+}
