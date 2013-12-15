@@ -29,11 +29,22 @@ function debug(name) {
       + fmt
       + ' +' + debug.humanize(ms);
 
-    if (debug.colorSupport)  {
-      fmt = '%c ' + fmt;
-      args = Array.prototype.slice.call(arguments);
-      args.splice(1, 0, debug.color(name));
-    }
+      if (debug.colorSupport)  {
+        fmt = '%c ' + fmt;
+        args = Array.prototype.slice.call(arguments);
+        args.splice(1, 0, debug.color(name));
+      }
+
+      // add lineNumber if possible
+      var stack = new Error().stack;
+      if (typeof stack !== 'undefined') {
+        stack = stack.split('\n');
+        var lineNumber = stack[2];
+        if (lineNumber.indexOf('(') !== - 1) {
+          lineNumber = lineNumber.substring(lineNumber.lastIndexOf('(')+1,lineNumber.lastIndexOf(')'));
+        }
+        args.push(lineNumber);
+      }
 
     // This hackery is required for IE8
     // where `console.log` doesn't have 'apply'
