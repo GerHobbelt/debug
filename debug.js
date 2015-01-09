@@ -10,6 +10,7 @@ exports = module.exports = debug;
 exports.coerce = coerce;
 exports.disable = disable;
 exports.enable = enable;
+exports.reset = reset;
 exports.enabled = enabled;
 exports.humanize = require('ms');
 
@@ -19,6 +20,8 @@ exports.humanize = require('ms');
 
 exports.names = [];
 exports.skips = [];
+exports.namespaces = [];
+exports.namespaceFns = {};
 
 /**
  * Map of special "%n" handling functions, for the debug "format" argument.
@@ -65,11 +68,12 @@ function debug(namespace) {
   function disabled() {
   }
   disabled.enabled = false;
+  disabled.namespace = namespace;
 
   // define the `enabled` version
   function enabled() {
-
-    var self = enabled;
+    //console.log('enabled keys:', Object.keys(enabled));
+    var self = this === dynamic ? dynamic : enabled;
 
     // set `diff` timestamp
     var curr = +new Date();
@@ -113,16 +117,29 @@ function debug(namespace) {
     if ('function' === typeof exports.formatArgs) {
       args = exports.formatArgs.apply(self, args);
     }
-    var logFn = enabled.log || exports.log || console.log.bind(console);
+    var logFn = self.log || exports.log || console.log.bind(console);
     logFn.apply(self, args);
   }
   enabled.enabled = true;
+  enabled.namespace = namespace;
 
-  var fn = exports.enabled(namespace) ? enabled : disabled;
+  function dynamic() {
+    var self = dynamic;
+    //console.log('dynamic keys:', Object.keys(self));
+    self.fn.apply(self, Array.prototype.slice.call(arguments));
+  }
+  dynamic.enabled = exports.enabled(namespace);
+  dynamic.namespace = namespace;
+  dynamic.fn = dynamic.enabled ? enabled : disabled;
+  dynamic.enabledFn = enabled;
+  dynamic.disabledFn = disabled;
 
-  fn.namespace = namespace;
+  if (exports.namespaces.indexOf(namespace) < 0) {
+    exports.namespaces.push(namespace);
+    exports.namespaceFns[namespace] = dynamic;
+  }
 
-  return fn;
+  return dynamic;
 }
 
 /**
@@ -148,6 +165,13 @@ function enable(namespaces) {
       exports.names.push(new RegExp('^' + namespaces + '$'));
     }
   }
+
+  exports.namespaces.forEach(function(namespace) {
+    exports.namespaceFns[namespace].fn = exports.enabled(namespace)
+      ? exports.namespaceFns[namespace].enabledFn
+      : exports.namespaceFns[namespace].disabledFn
+    exports.namespaceFns[namespace].enabled = exports.enabled(namespace)
+  })
 }
 
 /**
@@ -158,6 +182,17 @@ function enable(namespaces) {
 
 function disable() {
   exports.enable('');
+}
+
+/**
+ * Clears all enabled debugger rules
+ *
+ * @api public
+ */
+
+function reset() {
+  exports.skips = [];
+  exports.names = [];
 }
 
 /**

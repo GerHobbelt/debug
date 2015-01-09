@@ -1,11 +1,11 @@
 {
-  "name": "debug",
-  "version": "2.1.1",
+  "name": "redebug",
+  "version": "3.0.0",
   "repository": {
     "type": "git",
-    "url": "git://github.com/visionmedia/debug.git"
+    "url": "git://github.com/bdentino/debug.git"
   },
-  "description": "small debugging utility",
+  "description": "small debugging utility with runtime configurability",
   "keywords": [
     "debug",
     "log",
