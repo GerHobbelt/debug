@@ -1,4 +1,3 @@
-
 /**
  * Module dependencies.
  */
@@ -207,3 +206,10 @@ function createWritableStdioStream (fd) {
  */
 
 exports.enable(load());
+
+
+/**
+ * Patch original debug
+ */
+// TODO: Can i just monkey-patch the overwritten parts of debug? Get rid of all this duplication?
+require.cache[require.resolve('debug')] = require.cache[require.resolve('redebug')];

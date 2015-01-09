@@ -1,6 +1,6 @@
 {
   "name": "redebug",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "repository": {
     "type": "git",
     "url": "git://github.com/bdentino/debug.git"
@@ -17,6 +17,7 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "debug": "^2.1.1",
     "ms": "0.6.2"
   },
   "devDependencies": {
