@@ -40,7 +40,7 @@ exports.colors = [
 function useColors() {
   return (
     // is worker and supports colors?
-    (!window && /chrome/.test(navigator.userAgent.toLowerCase())) ||
+    (typeof window === 'undefined' && /chrome/.test(navigator.userAgent.toLowerCase())) ||
     // is webkit? http://stackoverflow.com/a/16459606/376773
     (document && 'WebkitAppearance' in document.documentElement.style) ||
     // is firebug? http://stackoverflow.com/a/398120/376773
