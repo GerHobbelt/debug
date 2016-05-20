@@ -34,20 +34,26 @@ exports.colors = [
  * and the Firebug extension (any Firefox version) are known
  * to support "%c" CSS customizations.
  *
- * TODO: add a `localStorage` variable to explicitly enable/disable colors
+ * ~~TODO: add a `localStorage` variable to explicitly enable/disable colors~~
+ * NOPE, instead TODO: figure out if firefox can support colors in worker.
+ * Simplify this test regime to assume colors supported unless it is not using
+ * safe, actual console.
  */
 
 function useColors() {
+  var windowDefined = typeof window !== 'undefined';
+  var documentDefined = typeof document !== 'undefined';
+
   return (
     // is worker and supports colors?
-    (typeof window === 'undefined' && /chrome/.test(navigator.userAgent.toLowerCase())) ||
+    (!windowDefined && /chrome/.test(navigator.userAgent.toLowerCase())) ||
     // is webkit? http://stackoverflow.com/a/16459606/376773
-    (document && 'WebkitAppearance' in document.documentElement.style) ||
+    (documentDefined && 'WebkitAppearance' in document.documentElement.style) ||
     // is firebug? http://stackoverflow.com/a/398120/376773
-    (window && window.console && (console.firebug || (console.exception && console.table))) ||
+    (windowDefined && window.console && (console.firebug || (console.exception && console.table))) ||
     // is firefox >= v31?
     // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
-    (navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31)
+    (windowDefined && (navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31))
   );
 }
 
