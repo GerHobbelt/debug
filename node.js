@@ -103,6 +103,7 @@ function formatArgs() {
  */
 
 function log() {
+  console.log(...arguments);
   return stream.write(util.format.apply(this, arguments) + '\n');
 }
 
