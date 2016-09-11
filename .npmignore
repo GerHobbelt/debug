@@ -4,3 +4,6 @@ examples
 example
 *.sock
 dist
+.eslintrc
+.jsfmtrc
+History.md
