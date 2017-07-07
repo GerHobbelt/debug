@@ -1,6 +1,5 @@
 
 var debug = require('../')('http')
-  , http = require('http')
   , name = 'My App';
 
 // fake app
