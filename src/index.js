@@ -5,6 +5,8 @@
 
 if (typeof process === 'undefined' || process.type === 'renderer') {
   module.exports = require('./browser.js');
+} else if (typeof self !== 'undefined') {
+  module.exports = require('./browser.js');
 } else {
   module.exports = require('./node.js');
 }
