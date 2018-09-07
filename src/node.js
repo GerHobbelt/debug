@@ -119,12 +119,16 @@ function log() {
  */
 
 function save(namespaces) {
+  // webpack DefinePlugin will replace "process.env.DEBUG" with a constant expression, e.g. "true." To 
+  // avoid this issue, we need to alias "process.env" to a variable, so that webpack DefinePlugin will
+  // not create a syntax error by producing the invalid statement "false = namespaces;"
+  var env = process.env;
   if (null == namespaces) {
     // If you set a process.env field to null or undefined, it gets cast to the
     // string 'null' or 'undefined'. Just delete instead.
-    delete process.env.DEBUG;
+    delete env.DEBUG;
   } else {
-    process.env.DEBUG = namespaces;
+    env.DEBUG = namespaces;
   }
 }
 
