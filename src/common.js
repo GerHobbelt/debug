@@ -159,8 +159,8 @@ module.exports = function setup(env) {
   function enable(namespaces) {
     createDebug.save(namespaces);
 
-    createDebug.names = [];
-    createDebug.skips = [];
+    createDebug.names = createDebug.names || [];
+    createDebug.skips = createDebug.skips || [];
 
     var i;
     var split = (typeof namespaces === 'string' ? namespaces : '').split(/[\s,]+/);
@@ -189,7 +189,7 @@ module.exports = function setup(env) {
    */
 
   function disable() {
-    createDebug.enable('');
+    createDebug.names = [];
   }
 
   /**
@@ -202,7 +202,7 @@ module.exports = function setup(env) {
 
   function enabled(name) {
     if (name[name.length - 1] === '*') {
-      return true;
+      return createDebug.names.length > 0;
     }
     var i, len;
     for (i = 0, len = createDebug.skips.length; i < len; i++) {
