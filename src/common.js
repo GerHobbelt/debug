@@ -131,9 +131,7 @@ module.exports = function setup(env) {
       createDebug.init(debug);
     }
 
-    if (debug.enabled) {
-      createDebug.instances.push(debug);
-    }
+    createDebug.instances.push(debug);
    
     return debug;
   }
@@ -156,23 +154,44 @@ module.exports = function setup(env) {
    * @api public
    */
 
-  function enable(namespaces) {
+  function enable(namespaces, options) {
+    options = options || {};
+    
     createDebug.save(namespaces);
 
+    if (!options.append && options.append !== undefined) {
+      createDebug.names = [];
+      createDebug.skips = [];
+    }
     createDebug.names = createDebug.names || [];
     createDebug.skips = createDebug.skips || [];
 
-    var i;
+    var i, re, s;
     var split = (typeof namespaces === 'string' ? namespaces : '').split(/[\s,]+/);
     var len = split.length;
 
     for (i = 0; i < len; i++) {
       if (!split[i]) continue; // ignore empty strings
-      namespaces = split[i].replace(/\*/g, '.*?');
+      namespaces = split[i].replace(/[.?$^()+{}[\]|/\\]/g, '\\$&').replace(/\*/g, '.*?');
       if (namespaces[0] === '-') {
-        createDebug.skips.push(new RegExp('^' + namespaces.substr(1) + '$'));
+        namespaces = namespaces.substr(1);
+        re = new RegExp('^' + namespaces + '$');
+        createDebug.skips.push(re);
+        // When you SKIP a namespace, it SHOULD NOT be part of the inclusive `names` list anymore.
+        // Hence the (contrived) namespaces spec 'a,-a,a' should end up as namespace 'a' being ENABLED!
+        s = re.toString();
+        createDebug.names = createDebug.names.filter(function (el) {
+          return el.toString() !== s;
+        });
       } else {
-        createDebug.names.push(new RegExp('^' + namespaces + '$'));
+        re = new RegExp('^' + namespaces + '$');
+        createDebug.names.push(re);
+        // When you SKIP a namespace, it SHOULD NOT be part of the inclusive `names` list anymore.
+        // Hence the (contrived) namespaces spec 'a,-a,a' should end up as namespace 'a' being ENABLED!
+        s = re.toString();
+        createDebug.skips = createDebug.skips.filter(function (el) {
+          return el.toString() !== s;
+        });
       }
     }
 
@@ -190,6 +209,7 @@ module.exports = function setup(env) {
 
   function disable() {
     createDebug.names = [];
+    createDebug.skips = [];
   }
 
   /**

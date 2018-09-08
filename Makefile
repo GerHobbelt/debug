@@ -24,7 +24,8 @@ node_modules: package.json
 	@NODE_ENV= $(PKG) install
 	@touch node_modules
 
-dist/debug.js: src/*.js 
+dist/debug.js: src/*.js
+	@echo "Compile dist/debug.js" 
 	@mkdir -p dist
 	@node_modules/.bin/browserify \
 		--standalone debug \
@@ -37,23 +38,14 @@ fix:
 	@eslint --fix *.js src/*.js
 
 test-node:
-	node_modules/.bin/nyc --all node_modules/mocha/bin/_mocha -- test/**.js
+	nyc mocha -- test/**.js
 
-test-browser:
-	@make browser
+test-browser: browser
 	@karma start --single-run
 
-test-all:
-	@concurrently \
-		"make test-node" \
-		"make test-browser"
+test-all: test-node test-all
 
-test:
-	@if [ "x$(BROWSER)" = "x" ]; then \
-		make test-node; \
-		else \
-		make test-browser; \
-	fi
+test: test-node
 
 clean:
 	rimraf dist coverage
