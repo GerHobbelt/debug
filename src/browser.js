@@ -1,3 +1,7 @@
+if (typeof window === "undefined" && typeof self !== "undefined") {
+  var window = self;
+}
+
 /**
  * This is the web browser implementation of `debug()`.
  */
