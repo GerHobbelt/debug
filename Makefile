@@ -24,7 +24,7 @@ node_modules: package.json
 	@NODE_ENV= $(PKG) install
 	@touch node_modules
 
-dist/debug.js: src/*.js
+dist/debug.js: src/*.js package.json
 	@echo "Compile dist/debug.js" 
 	@mkdir -p dist
 	@node_modules/.bin/browserify \
