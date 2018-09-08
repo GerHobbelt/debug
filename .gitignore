@@ -5,6 +5,7 @@ build
 npm-debug.log
 dist
 coverage
+.nyc_output/
 
 # lockfiles
 yarn.lock
