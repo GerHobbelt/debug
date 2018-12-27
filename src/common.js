@@ -153,53 +153,52 @@ function setup(env) {
 	* @param {String} namespaces
 	* @api public
 	*/
-  function enable(namespaces, options) {
-    options = options || {};
-    
+	function enable(namespaces, options) {
+		options = options || {};
+
 		createDebug.save(namespaces);
 
-    if (!options.append && options.append !== undefined) {
-      createDebug.names = [];
-      createDebug.skips = [];
-    }
-    createDebug.names = createDebug.names || [];
-    createDebug.skips = createDebug.skips || [];
+		if (!options.append && options.append !== undefined) {
+			createDebug.names = [];
+			createDebug.skips = [];
+		}
+		createDebug.names = createDebug.names || [];
+		createDebug.skips = createDebug.skips || [];
 
-		let i;
 		const split = (typeof namespaces === 'string' ? namespaces : '').split(/[\s,]+/);
 		const len = split.length;
 
-		for (i = 0; i < len; i++) {
+		for (let i = 0; i < len; i++) {
 			if (!split[i]) {
 				// ignore empty strings
 				continue;
 			}
 
-      namespaces = split[i].replace(/[.?$^()+{}[\]|/\\]/g, '\\$&').replace(/\*/g, '.*?');
+			namespaces = split[i].replace(/[.?$^()+{}[\]|/\\]/g, '\\$&').replace(/\*/g, '.*?');
 
-      if (namespaces[0] === '-') {
-        namespaces = namespaces.substr(1);
-        re = new RegExp('^' + namespaces + '$');
-        createDebug.skips.push(re);
-        // When you SKIP a namespace, it SHOULD NOT be part of the inclusive `names` list anymore.
-        // Hence the (contrived) namespaces spec 'a,-a,a' should end up as namespace 'a' being ENABLED!
-        s = re.toString();
-        createDebug.names = createDebug.names.filter(function (el) {
-          return el.toString() !== s;
-        });
-      } else {
-        re = new RegExp('^' + namespaces + '$');
-        createDebug.names.push(re);
-        // When you SKIP a namespace, it SHOULD NOT be part of the inclusive `names` list anymore.
-        // Hence the (contrived) namespaces spec 'a,-a,a' should end up as namespace 'a' being ENABLED!
-        s = re.toString();
-        createDebug.skips = createDebug.skips.filter(function (el) {
-          return el.toString() !== s;
-        });
-      }
-    }
+			if (namespaces[0] === '-') {
+				namespaces = namespaces.substr(1);
+				const re = new RegExp('^' + namespaces + '$');
+				createDebug.skips.push(re);
+				// When you SKIP a namespace, it SHOULD NOT be part of the inclusive `names` list anymore.
+				// Hence the (contrived) namespaces spec 'a,-a,a' should end up as namespace 'a' being ENABLED!
+				const s = re.toString();
+				createDebug.names = createDebug.names.filter(el => {
+					return el.toString() !== s;
+				});
+			} else {
+				const re = new RegExp('^' + namespaces + '$');
+				createDebug.names.push(re);
+				// When you SKIP a namespace, it SHOULD NOT be part of the inclusive `names` list anymore.
+				// Hence the (contrived) namespaces spec 'a,-a,a' should end up as namespace 'a' being ENABLED!
+				const s = re.toString();
+				createDebug.skips = createDebug.skips.filter(el => {
+					return el.toString() !== s;
+				});
+			}
+		}
 
-		for (i = 0; i < createDebug.instances.length; i++) {
+		for (let i = 0; i < createDebug.instances.length; i++) {
 			const instance = createDebug.instances[i];
 			instance.enabled = createDebug.enabled(instance.namespace);
 		}
@@ -210,10 +209,10 @@ function setup(env) {
 	*
 	* @api public
 	*/
-  function disable() {
-    createDebug.names = [];
-    createDebug.skips = [];
-  }
+	function disable() {
+		createDebug.names = [];
+		createDebug.skips = [];
+	}
 
 	/**
 	* Returns true if the given mode name is enabled, false otherwise.
@@ -224,19 +223,16 @@ function setup(env) {
 	*/
 	function enabled(name) {
 		if (name[name.length - 1] === '*') {
-      return createDebug.names.length > 0;
+			return createDebug.names.length > 0;
 		}
 
-		let i;
-		let len;
-
-		for (i = 0, len = createDebug.skips.length; i < len; i++) {
+		for (let i = 0, len = createDebug.skips.length; i < len; i++) {
 			if (createDebug.skips[i].test(name)) {
 				return false;
 			}
 		}
 
-		for (i = 0, len = createDebug.names.length; i < len; i++) {
+		for (let i = 0, len = createDebug.names.length; i < len; i++) {
 			if (createDebug.names[i].test(name)) {
 				return true;
 			}

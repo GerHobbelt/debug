@@ -12,16 +12,14 @@ SHELL := bash
 # applications
 NODE = node
 PKG = npm
-BABEL = $(BIN)/babel
-BROWSERIFY = $(BIN)/browserify
 
-all: lint test
+all: dist test
 
 dist: dist/debug.js dist/test.js
 
 install: node_modules
 
-browser: dist/debug.js
+browser: dist
 
 node_modules: package.json
 	@NODE_ENV= $(PKG) install
@@ -31,16 +29,16 @@ node_modules: package.json
 dist/debug.es6.js: src/*.js
 	@echo "Compile dist/debug.es6.js" 
 	@mkdir -p dist
-	$(BROWSERIFY) --standalone debug $< > $@
+	browserify --standalone debug $< > $@
 
 dist/debug.js: dist/debug.es6.js
 	@echo "Compile dist/debug.js" 
 	@mkdir -p dist
-	$(BABEL) $< > $@
+	babel $< > $@
 
 dist/test.js: test.js
 	@mkdir -p dist
-	$(BABEL) $< > $@
+	babel $< > $@
 
 lint:
 	xo
@@ -49,16 +47,14 @@ fix:
 	xo --fix
 
 test-node:
-	nyc mocha -- test/**.js
+	nyc mocha -- test.js
 
 test-browser: browser
 	@karma start --single-run
 
-test-all: test-node test-browser
-
-test: test-node
+test: test-node test-browser
 
 clean:
 	rimraf dist coverage
 
-.PHONY: browser install clean lint test test-all test-node test-browser all
+.PHONY: browser install clean lint test fix dist test-node test-browser all node_modules

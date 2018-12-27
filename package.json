@@ -28,7 +28,8 @@
   },
   "scripts": {
     "build": "make",
-    "test": "make test-node",
+    "test": "make test",
+    "lint": "make lint",
     "pub": "npm publish --access public"
   },
   "devDependencies": {

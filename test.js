@@ -81,16 +81,16 @@ describe('debug', () => {
 			expect(logBar.namespace).to.be.equal('foobar');
 		});
 
-		it('accepts namespace names with embedded dots and other regex chars', function () {
+		it('accepts namespace names with embedded dots and other regex chars', () => {
 			function test(ns, sollwert) {
-				debug.enable('-a, -b, -aa, -ab, -ad, -ae, -abc, ' + ns, { append: false });
-				var ist = {
+				debug.enable('-a, -b, -aa, -ab, -ad, -ae, -abc, ' + ns, {append: false});
+				const ist = {
 					names: debug.names.join('\n'),
-					skips: debug.skips.join('\n'),
+					skips: debug.skips.join('\n')
 				};
-				expect(ist, "namespace '" + ns + "' should be treated as a literal string, i.e. /" + sollwert + "/").to.eql({ 
+				expect(ist, 'namespace \'' + ns + '\' should be treated as a literal string, i.e. /' + sollwert + '/').to.eql({
 					names: '/^' + sollwert + '$/',
-					skips: '/^a$/\n/^b$/\n/^aa$/\n/^ab$/\n/^ad$/\n/^ae$/\n/^abc$/' 
+					skips: '/^a$/\n/^b$/\n/^aa$/\n/^ab$/\n/^ad$/\n/^ae$/\n/^abc$/'
 				});
 			}
 
@@ -99,47 +99,43 @@ describe('debug', () => {
 				'a\\s=a\\\\s',
 				'$a$=\\$a\\$, ^a^b^=\\^a\\^b\\^',
 				'*a*=.*?a.*?, a+=a\\+, a|b=a\\|b'
-			].join(', ').split(', ').forEach(function (s) {
-				if (!s) return;
+			].join(', ').split(', ').forEach(s => {
+				if (!s) {
+					return;
+				}
 				s = s.split('=');
 				test(s[0], s[1]);
 			});
 		});
 
-		it('should avoid namespace conflict', function () {
+		it('should avoid namespace conflict', () => {
 			debug.enable('test1*');
 			debug.enable('test2*');
 
-			expect(debug('test1').enabled).to.be.true;
-			expect(debug('test2').enabled).to.be.true;
+			expect(debug('test1').enabled).to.equal(true);
+			expect(debug('test2').enabled).to.equal(true);
 		});
 	});
 
-	it('skipping and enabling sequence should not get stuck at skipping', function () {
+	it('skipping and enabling sequence should not get stuck at skipping', () => {
 		debug.enable('test1,test2*');
 		debug.enable('-test1,-test2*');
 		debug.enable('test1,test2*');
 
-		expect(debug('test1').enabled).to.be.true;
-		expect(debug('test2').enabled).to.be.true;
+		expect(debug('test1').enabled).to.equal(true);
+		expect(debug('test2').enabled).to.equal(true);
 	});
 
-	describe('disable()', function () {
-		beforeEach(function () {
+	describe('disable()', () => {
+		beforeEach(() => {
 			debug.enable('*');
-			debug('should disable')
+			debug('should disable');
 		});
 
-		it('disable itself', function () {
+		it('disable itself', () => {
 			debug.disable('*');
-			expect(debug.enabled('*')).to.be.false;
+			expect(debug.enabled('*')).to.equal(false);
 		});
 	});
 });
-
-
-
-
-
-
 
