@@ -86,10 +86,10 @@ describe('debug', () => {
 					names: debug.names.join('\n'),
 					skips: debug.skips.join('\n')
 				};
-				expect(ist, 'namespace \'' + ns + '\' should be treated as a literal string, i.e. /' + sollwert + '/').to.eql({
+				assert.deepStrictEqual(ist, {
 					names: '/^' + sollwert + '$/',
 					skips: '/^a$/\n/^b$/\n/^aa$/\n/^ab$/\n/^ad$/\n/^ae$/\n/^abc$/'
-				});
+				}, 'namespace \'' + ns + '\' should be treated as a literal string, i.e. /' + sollwert + '/');
 			}
 
 			[
@@ -110,8 +110,8 @@ describe('debug', () => {
 			debug.enable('test1*');
 			debug.enable('test2*');
 
-			expect(debug('test1').enabled).to.equal(true);
-			expect(debug('test2').enabled).to.equal(true);
+			assert.deepStrictEqual(debug('test1').enabled, true);
+			assert.deepStrictEqual(debug('test2').enabled, true);
 		});
 
 		it('should keep the log function between extensions', () => {
@@ -119,7 +119,7 @@ describe('debug', () => {
 			log.log = () => {};
 
 			const logBar = log.extend('bar');
-			expect(log.log).to.be.equal(logBar.log);
+			assert.deepStrictEqual(log.log, logBar.log);
 		});
 	});
 
@@ -128,8 +128,8 @@ describe('debug', () => {
 		debug.enable('-test1,-test2*');
 		debug.enable('test1,test2*');
 
-		expect(debug('test1').enabled).to.equal(true);
-		expect(debug('test2').enabled).to.equal(true);
+		assert.deepStrictEqual(debug('test1').enabled, true);
+		assert.deepStrictEqual(debug('test2').enabled, true);
 	});
 
 	describe('disable()', () => {
@@ -140,7 +140,7 @@ describe('debug', () => {
 
 		it('disable itself', () => {
 			debug.disable('*');
-			expect(debug.enabled('*')).to.equal(false);
+			assert.deepStrictEqual(debug.enabled('*'), false);
 		});
 	});
 

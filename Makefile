@@ -13,32 +13,13 @@ SHELL := bash
 NODE = node
 PKG = npm
 
-all: dist test
-
-dist: dist/debug.js dist/test.js
+all: test
 
 install: node_modules
-
-browser: dist
 
 node_modules: package.json
 	@NODE_ENV= $(PKG) install
 	@touch node_modules
-
-.INTERMEDIATE: dist/debug.es6.js
-dist/debug.es6.js: src/*.js
-	@echo "Compile dist/debug.es6.js" 
-	@mkdir -p dist
-	browserify --standalone debug -o $@ .
-
-dist/debug.js: dist/debug.es6.js
-	@echo "Compile dist/debug.js" 
-	@mkdir -p dist
-	babel -o dist/debug.js $< > $@
-
-dist/test.js: test.js
-	@mkdir -p dist
-	babel -d dist $< 
 
 lint:
 	xo
@@ -49,12 +30,12 @@ fix:
 test-node:
 	nyc mocha -- test.js
 
-test-browser: browser
+test-browser:
 	@karma start --single-run
 
 test: test-node test-browser
 
 clean:
-	rimraf dist coverage
+	rimraf coverage
 
-.PHONY: browser install clean lint test fix dist test-node test-browser all node_modules
+.PHONY: install clean lint test fix test-node test-browser all node_modules
