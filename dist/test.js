@@ -1,6 +1,14 @@
 /* eslint-env mocha */
 'use strict';
 
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+
+function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+
 var chai;
 var expect;
 var debug;
@@ -133,5 +141,41 @@ describe('debug', function () {
       expect(debug.enabled('*')).to.equal(false);
     });
   });
-});
+  describe('rebuild namespaces string (disable)', function () {
+    it('handle names, skips, and wildcards', function () {
+      debug.enable('test,abc*,-abc');
+      var namespaces = debug.disable();
+      expect(namespaces).to.equal('test,abc*,-abc');
+    });
+    it('handles empty', function () {
+      debug.enable('');
+      var namespaces = debug.disable();
+      expect(namespaces).to.equal('');
+      expect(debug.names).to.deep.equal([]);
+      expect(debug.skips).to.deep.equal([]);
+    });
+    it('handles all', function () {
+      debug.enable('*');
+      var namespaces = debug.disable();
+      expect(namespaces).to.equal('*');
+    });
+    it('handles skip all', function () {
+      debug.enable('-*');
+      var namespaces = debug.disable();
+      expect(namespaces).to.equal('-*');
+    });
+    it('names+skips same with new string', function () {
+      debug.enable('test,abc*,-abc');
 
+      var oldNames = _toConsumableArray(debug.names);
+
+      var oldSkips = _toConsumableArray(debug.skips);
+
+      var namespaces = debug.disable();
+      expect(namespaces).to.equal('test,abc*,-abc');
+      debug.enable(namespaces);
+      expect(oldNames.map(String)).to.deep.equal(debug.names.map(String));
+      expect(oldSkips.map(String)).to.deep.equal(debug.skips.map(String));
+    });
+  });
+});
