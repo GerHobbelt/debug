@@ -36,6 +36,6 @@ test-browser:
 test: test-node test-browser
 
 clean:
-	rimraf coverage
+	rimraf coverage .nyc_output
 
 .PHONY: install clean lint test fix test-node test-browser all node_modules
