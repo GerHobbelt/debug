@@ -207,11 +207,17 @@ function setup(env) {
 	/**
 	* Disable debug output.
 	*
+	* @return {String} namespaces
 	* @api public
 	*/
 	function disable() {
+		const namespaces = [
+			...createDebug.names.map(toNamespace),
+			...createDebug.skips.map(toNamespace).map(namespace => '-' + namespace)
+		].join(',');
 		createDebug.names = [];
 		createDebug.skips = [];
+		return namespaces;
 	}
 
 	/**
@@ -239,6 +245,19 @@ function setup(env) {
 		}
 
 		return false;
+	}
+
+	/**
+	* Convert regexp to namespace
+	*
+	* @param {RegExp} regxep
+	* @return {String} namespace
+	* @api private
+	*/
+	function toNamespace(regexp) {
+		return regexp.toString()
+			.substring(2, regexp.toString().length - 2)
+			.replace(/\.\*\?$/, '*');
 	}
 
 	/**

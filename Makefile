@@ -29,16 +29,16 @@ node_modules: package.json
 dist/debug.es6.js: src/*.js
 	@echo "Compile dist/debug.es6.js" 
 	@mkdir -p dist
-	browserify --standalone debug . > $@
+	browserify --standalone debug -o $@ .
 
 dist/debug.js: dist/debug.es6.js
 	@echo "Compile dist/debug.js" 
 	@mkdir -p dist
-	babel $< > $@
+	babel -o dist/debug.js $< > $@
 
 dist/test.js: test.js
 	@mkdir -p dist
-	babel $< > $@
+	babel -d dist $< 
 
 lint:
 	xo
