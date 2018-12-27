@@ -6,15 +6,18 @@ THIS_DIR:=$(shell cd $(dir $(THIS_MAKEFILE_PATH));pwd)
 BIN := node_modules/.bin
 
 # Path
-PATH := node_modules/.bin:$(PATH)
+export PATH := $(THIS_DIR)/node_modules/.bin:$(PATH)
 SHELL := bash
 
 # applications
 NODE = node
 PKG = npm
+BABEL = $(BIN)/babel
 BROWSERIFY = $(BIN)/browserify
 
-all: lint browser test-node
+all: lint test
+
+dist: dist/debug.js dist/test.js
 
 install: node_modules
 
@@ -24,18 +27,26 @@ node_modules: package.json
 	@NODE_ENV= $(PKG) install
 	@touch node_modules
 
-dist/debug.js: src/*.js package.json
+.INTERMEDIATE: dist/debug.es6.js
+dist/debug.es6.js: src/*.js
+	@echo "Compile dist/debug.es6.js" 
+	@mkdir -p dist
+	$(BROWSERIFY) --standalone debug $< > $@
+
+dist/debug.js: dist/debug.es6.js
 	@echo "Compile dist/debug.js" 
 	@mkdir -p dist
-	@node_modules/.bin/browserify \
-		--standalone debug \
-		. > dist/debug.js
+	$(BABEL) $< > $@
+
+dist/test.js: test.js
+	@mkdir -p dist
+	$(BABEL) $< > $@
 
 lint:
-	@eslint *.js src/*.js
+	xo
 
 fix:
-	@eslint --fix *.js src/*.js
+	xo --fix
 
 test-node:
 	nyc mocha -- test/**.js
@@ -43,7 +54,7 @@ test-node:
 test-browser: browser
 	@karma start --single-run
 
-test-all: test-node test-all
+test-all: test-node test-browser
 
 test: test-node
 
