@@ -602,7 +602,9 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
         }
 
         function extend(namespace, delimiter) {
-          return createDebug(this.namespace + (typeof delimiter === 'undefined' ? ':' : delimiter) + namespace);
+          var newDebug = createDebug(this.namespace + (typeof delimiter === 'undefined' ? ':' : delimiter) + namespace);
+          newDebug.log = this.log;
+          return newDebug;
         }
         /**
         * Enables a debug mode by namespaces. This can include modes

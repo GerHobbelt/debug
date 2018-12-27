@@ -123,6 +123,14 @@ describe('debug', function () {
       expect(debug('test1').enabled).to.equal(true);
       expect(debug('test2').enabled).to.equal(true);
     });
+    it('should keep the log function between extensions', function () {
+      var log = debug('foo');
+
+      log.log = function () {};
+
+      var logBar = log.extend('bar');
+      expect(log.log).to.be.equal(logBar.log);
+    });
   });
   it('skipping and enabling sequence should not get stuck at skipping', function () {
     debug.enable('test1,test2*');
