@@ -166,7 +166,7 @@ function formatArgs(args) {
 	if (useColors) {
 		const c = this.color;
 		const colorCode = '\u001B[3' + (c < 8 ? c : '8;5;' + c);
-		const prefix = `  ${colorCode};1m${name} \u001B[0m`;
+		const prefix = `  ${colorCode}m${name} \u001B[0m`;
 
 		args[0] = prefix + args[0].split('\n').join('\n' + prefix);
 		args.push(colorCode + 'm+' + module.exports.humanize(this.diff) + '\u001B[0m');
