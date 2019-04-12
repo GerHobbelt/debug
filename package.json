@@ -49,5 +49,8 @@
   },
   "main": "./src/index.js",
   "browser": "./src/browser.js",
-  "unpkg": "./dist/debug.js"
+  "unpkg": "./dist/debug.js",
+  "engines": {
+    "node": ">=6.0" 
+  }
 }
