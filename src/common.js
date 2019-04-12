@@ -52,6 +52,7 @@ function setup(env) {
 
 		return createDebug.colors[Math.abs(hash) % createDebug.colors.length];
 	}
+
 	createDebug.selectColor = selectColor;
 
 	/**
@@ -94,6 +95,7 @@ function setup(env) {
 				if (match === '%%') {
 					return match;
 				}
+
 				index++;
 				const formatter = createDebug.formatters[format];
 				if (typeof formatter === 'function') {
@@ -104,6 +106,7 @@ function setup(env) {
 					args.splice(index, 1);
 					index--;
 				}
+
 				return match;
 			});
 
@@ -139,6 +142,7 @@ function setup(env) {
 			createDebug.instances.splice(index, 1);
 			return true;
 		}
+
 		return false;
 	}
 
@@ -164,6 +168,7 @@ function setup(env) {
 			createDebug.names = [];
 			createDebug.skips = [];
 		}
+
 		createDebug.names = createDebug.names || [];
 		createDebug.skips = createDebug.skips || [];
 
@@ -273,6 +278,7 @@ function setup(env) {
 		if (val instanceof Error) {
 			return val.stack || val.message;
 		}
+
 		return val;
 	}
 

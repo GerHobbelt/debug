@@ -101,6 +101,7 @@ describe('debug', () => {
 				if (!s) {
 					return;
 				}
+
 				s = s.split('=');
 				test(s[0], s[1]);
 			});

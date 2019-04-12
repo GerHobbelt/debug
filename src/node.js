@@ -22,16 +22,17 @@ exports.getDate = getDate;
  */
 let envDebug = '';
 let isEnablingAll = true;
-process.on('SIGUSR2', function() {
+process.on('SIGUSR2', () => {
 	if (isEnablingAll) {
 		envDebug = module.exports.disable();
 		module.exports.enable('*');
-		console.log("Changing debug level to: *");
+		console.log('Changing debug level to: *');
 	} else {
-		console.log("Changing debug level to: " + envDebug);
+		console.log('Changing debug level to: ' + envDebug);
 		module.exports.disable();
 		module.exports.enable(envDebug);
 	}
+
 	isEnablingAll = !isEnablingAll;
 });
 
@@ -195,11 +196,11 @@ function formatArgs(args) {
 }
 
 function getDate() {
-  if (exports.inspectOpts.hideDate) {
-    return '';
-  } else {
-    return new Date().toString() + ' ';
-  }
+	if (exports.inspectOpts.hideDate) {
+		return '';
+	}
+
+	return new Date().toString() + ' ';
 }
 
 /**
@@ -220,7 +221,7 @@ function save(namespaces) {
 	// Webpack DefinePlugin will replace "process.env.DEBUG" with a constant expression, e.g. "true." To
 	// avoid this issue, we need to alias "process.env" to a variable, so that webpack DefinePlugin will
 	// not create a syntax error by producing the invalid statement "false = namespaces;"
-	const env = process.env;
+	const {env} = process;
 	if (namespaces) {
 		env.DEBUG = namespaces;
 	} else {
