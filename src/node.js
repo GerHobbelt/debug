@@ -11,11 +11,12 @@ const util = require('util');
 
 exports.init = init;
 exports.log = log;
-exports.formatArgs = formatArgs;
+exports.applyColor = applyColor;
 exports.save = save;
 exports.load = load;
 exports.useColors = useColors;
 exports.getDate = getDate;
+exports.getFormat = getFormat;
 
 /**
  * Allow for dynamic debug level change
@@ -156,7 +157,10 @@ exports.inspectOpts = Object.keys(process.env).filter(key => {
 	} else if (val === 'null') {
 		val = null;
 	} else {
-		val = Number(val);
+		const asNumber = Number(val);
+		if (!isNaN(asNumber)) {
+			val = asNumber;
+		}
 	}
 
 	obj[prop] = val;
@@ -174,23 +178,25 @@ function useColors() {
 }
 
 /**
- * Adds ANSI color escape codes if enabled.
- *
- * @api public
+ * If DEBUG_FORMAT if specified, returns it.
+ * Otherwise, returns a format matching previous version's based on DEBUG_COLORS and DEBUG_HIDE_DATE
  */
 
-function formatArgs(args) {
-	const {namespace: name, useColors} = this;
+function getFormat() {
+	const useColors = 'colors' in exports.inspectOpts ?
+		Boolean(exports.inspectOpts.colors) :
+		tty.isatty(process.stderr.fd);
 
-	if (useColors) {
-		const c = this.color;
-		const colorCode = '\u001B[3' + (c < 8 ? c : '8;5;' + c);
-		const prefix = `  ${colorCode}m${name} \u001B[0m`;
-
-		args[0] = prefix + args[0].split('\n').join('\n' + prefix);
-		args.push(colorCode + 'm+' + module.exports.humanize(this.diff) + '\u001B[0m');
+	if ('format' in exports.inspectOpts) {
+		return exports.inspectOpts.format;
 	} else {
-		args[0] = getDate() + name + ' ' + args[0];
+		if (useColors) {
+			return ' %Cn%m%c+'; // '  %n %m %+'
+		} else if (exports.inspectOpts.hideDate) {
+			return '%n%m'; // '%n %m'
+		} else {
+			return '%{%FT%T.%LZ%M-Z}%n%m'; // '%{%FT%T.%LZ%M-Z} %n %m'
+		}
 	}
 }
 
@@ -200,6 +206,20 @@ function getDate() {
 	}
 
 	return new Date().toString() + ' ';
+}
+
+/**
+ * Adds ANSI color escape codes if enabled.
+ *
+ * @api public
+ */
+
+function applyColor(str, bold = false) {
+	// I think doing this each time is a waste, colorCode could be stored in some variable?
+	const c = this.color;
+	const colorCode = '\u001B[3' + (c < 8 ? c : '8;5;' + c);
+
+	return colorCode + (bold ? ';1' : '') + 'm' + str + '\u001B[0m';
 }
 
 /**
