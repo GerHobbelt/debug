@@ -47,8 +47,8 @@ describe('debug', () => {
 		log(new Error('ex'));
 
 		assert.deepStrictEqual(messages.length, 1);
-		assert.deepStrictEqual(messages[0].length, 1);
-		assert(messages[0][0].indexOf('Error: ex\n') > 0);
+		assert.deepStrictEqual(messages[0].length, 3);
+		assert(messages[0].join(' :: ').indexOf('Error: ex\n') > 0);
 	});
 
 	it('uses custom log function', () => {
@@ -76,7 +76,7 @@ describe('debug', () => {
 		log('%O %% %j', 12345, {a:1});
 
 		assert.deepStrictEqual(messages.length, 1);
-		assert(messages[0][0].indexOf('%% {"a":1}') > 0);
+		assert(messages[0].join(' :: ').indexOf('%% {"a":1}') > 0);
 	});
 
 	it('handles non-string first arguments for logging', () => {
