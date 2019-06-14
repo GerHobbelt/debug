@@ -264,7 +264,6 @@ const {formatters} = module.exports;
 /**
  * Map %o to `util.inspect()`, all on a single line.
  */
-
 formatters.o = function (v) {
 	this.inspectOpts.colors = this.useColors;
 	return util.inspect(v, this.inspectOpts)
@@ -274,8 +273,18 @@ formatters.o = function (v) {
 /**
  * Map %O to `util.inspect()`, allowing multiple lines if needed.
  */
-
 formatters.O = function (v) {
 	this.inspectOpts.colors = this.useColors;
 	return util.inspect(v, this.inspectOpts);
+};
+
+/**
+ * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
+ */
+formatters.j = function (v) {
+	try {
+		return JSON.stringify(v);
+	} catch (error) {
+		return '[UnexpectedJSONStringifyError]: ' + error.message;
+	}
 };

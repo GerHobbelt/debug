@@ -84,7 +84,7 @@ function setup(env) {
 			args[0] = createDebug.coerce(args[0]);
 
 			if (typeof args[0] !== 'string') {
-				// Anything else let's inspect with %O
+				// Anything else: let's inspect with %O
 				args.unshift('%O');
 			}
 
@@ -140,10 +140,23 @@ function setup(env) {
 		const index = createDebug.instances.indexOf(this);
 		if (index !== -1) {
 			createDebug.instances.splice(index, 1);
-			return true;
 		}
 
-		return false;
+		// nuke instance methods to ensure any subsequent call to debug~log will cause a crash!
+		
+		function mkmsg(fn) {
+			throw new Error(fn + '() invocated after debug instance has been destroyed');
+		}
+
+		this.log = function logInvocatedAfterBeingDestroyed() {
+			mkmsg('log');
+		};
+		this.extend = function extendInvocatedAfterBeingDestroyed() {
+			mkmsg('extend');
+		};
+		this.enabled = true; // make sure debug(...) executes the instance-specific log function
+
+		return (index !== -1);
 	}
 
 	function extend(namespace, delimiter) {
@@ -276,7 +289,7 @@ function setup(env) {
 	*/
 	function coerce(val) {
 		if (val instanceof Error) {
-			return val.stack || val.message;
+			return val.stack || (val.name + ': ' + val.message);
 		}
 
 		return val;

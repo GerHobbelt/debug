@@ -100,7 +100,6 @@ exports.colors = [
  *
  * TODO: add a `localStorage` variable to explicitly enable/disable colors
  */
-
 // eslint-disable-next-line complexity
 function useColors() {
 	// NB: In an Electron preload script, document will be defined but not fully
@@ -132,7 +131,6 @@ function useColors() {
  *
  * @api public
  */
-
 function formatArgs(args) {
 	args[0] = (this.useColors ? '%c' : '') +
 		this.namespace +
@@ -250,11 +248,10 @@ const {formatters} = module.exports;
 /**
  * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
  */
-
 formatters.j = function (v) {
 	try {
 		return JSON.stringify(v);
 	} catch (error) {
-		return '[UnexpectedJSONParseError]: ' + error.message;
+		return '[UnexpectedJSONStringifyError]: ' + error.message;
 	}
 };

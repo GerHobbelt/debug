@@ -4,6 +4,13 @@ const assert = require('assert');
 const debug = require('./src');
 
 describe('debug', () => {
+	beforeEach(() => {
+		// debug.enable('', {
+		// 	append: false
+		// });
+		debug.disable();
+	});
+
 	it('passes a basic sanity check', () => {
 		const log = debug('test');
 		log.enabled = true;
@@ -29,6 +36,21 @@ describe('debug', () => {
 		assert.deepStrictEqual(debug('test:67890').enabled, false);
 	});
 
+	it('coerces Error instances', () => {
+		const log = debug('test');
+		log.enabled = true;
+		log.useColors = false;
+
+		const messages = [];
+		log.log = (...args) => messages.push(args);
+
+		log(new Error('ex'));
+
+		assert.deepStrictEqual(messages.length, 1);
+		assert.deepStrictEqual(messages[0].length, 1);
+		assert(messages[0][0].indexOf('Error: ex\n') > 0);
+	});
+
 	it('uses custom log function', () => {
 		const log = debug('test');
 		log.enabled = true;
@@ -41,6 +63,34 @@ describe('debug', () => {
 		log('%O', 12345);
 
 		assert.deepStrictEqual(messages.length, 3);
+	});
+
+	it('handles %-formatter transformations', () => {
+		const log = debug('test');
+		log.enabled = true;
+		log.useColors = false;
+
+		const messages = [];
+		log.log = (...args) => messages.push(args);
+
+		log('%O %% %j', 12345, {a:1});
+
+		assert.deepStrictEqual(messages.length, 1);
+		assert(messages[0][0].indexOf('%% {"a":1}') > 0);
+	});
+
+	it('handles non-string first arguments for logging', () => {
+		const log = debug('test');
+		log.enabled = true;
+		log.useColors = false;
+
+		let messages = [];
+		log.log = (...args) => messages.push(args);
+
+		log(['xyz']);
+
+		assert.deepStrictEqual(messages.length, 1);
+		assert(messages.join('#').indexOf('xyz') > 0);
 	});
 
 	describe('extend namespace', () => {
@@ -140,7 +190,7 @@ describe('debug', () => {
 		});
 
 		it('disable itself', () => {
-			debug.disable('*');
+			debug.disable();
 			assert.deepStrictEqual(debug.enabled('*'), false);
 		});
 	});
@@ -205,12 +255,26 @@ describe('debug', () => {
 
 			debug.enable('abc:*');
 			assert(!debug.enabled('test:*'));
+			assert(!debug.enabled('tesX'));
+			assert(debug.enabled('test'));
+			assert(!debug.enabled('testX'));
+			assert(!debug.enabled('ab'));
+			assert(!debug.enabled('cabc'));
+			assert(debug.enabled('abc'));
+			assert(debug.enabled('abcd'));
+			assert(debug.enabled('abcdef'));
+			assert(debug.enabled('abc:*'));
+			assert(debug.enabled('abc:d'));
+			assert(debug.enabled('abc:def'));
+			assert(debug.enabled('abc:'));
+			assert(debug.enabled('abc:###'));
+
+			debug.enable('abc:*', {
+				append: false
+			});
+			assert(debug.enabled('abc:foo'));
 			assert(!debug.enabled('test'));
 			assert(!debug.enabled('abc'));
-			assert(debug.enabled('abc:*'));
-
-			debug.enable('abc:*');
-			assert(debug.enabled('abc:foo'));
 		});
 
 		it('handles the * wildcard', () => {
@@ -224,5 +288,27 @@ describe('debug', () => {
 			assert(debug.enabled('*'));
 		});
 	});
+
+	describe('destroy()', () => {
+		it('destroys a debug instance', () => {
+			const log = debug('foo');
+			log.log = (a) => console.warn('a', this.namespace, '-->', a);
+			const alt = log.extend('bar');
+
+			assert.doesNotThrow(() => { log('x'); });
+			assert.doesNotThrow(() => { alt('x'); });
+			// destroying one instance should not impact the other instance:
+			assert(log.destroy() === true);
+			assert.throws(() => { log('x'); });
+			assert.doesNotThrow(() => { alt('x'); });
+			assert.throws(() => { log.extend('x'); });
+			// can still invoke `destroy()` on the nuked instance though:
+			assert(log.destroy() === false);
+			assert.throws(() => { log('x'); });
+			assert.doesNotThrow(() => { alt('x'); });
+			assert.throws(() => { log.extend('x'); });
+		});
+	});
+
 });
 
