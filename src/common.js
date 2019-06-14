@@ -81,7 +81,8 @@ function setup(env) {
 
 			// Set `diff` timestamp
 			const curr = Number(new Date());
-			self.diff = curr - (prevTime || curr);
+			const ms = curr - (prevTime || curr);
+			self.diff = ms;
 			self.prev = prevTime;
 			self.curr = curr;
 			prevTime = curr;
@@ -145,6 +146,9 @@ function setup(env) {
     let rv = false;
     
 		if (createDebug.instances[this.namespace] !== undefined) {
+  		if (createDebug.instances[this.namespace] !== this) {
+        throw new Error('Trying to destroy an already destroyed instance.');
+      }
 			delete createDebug.instances[this.namespace];
       rv = true;
 		}

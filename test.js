@@ -307,6 +307,12 @@ describe('debug', () => {
 			assert.throws(() => { log('x'); });
 			assert.doesNotThrow(() => { alt('x'); });
 			assert.throws(() => { log.extend('x'); });
+			// will barf hairball when destroyed namespace has got a fresh instance
+			// and you're still trying to nuke the old already-destroyed one:
+			const log2 = debug('foo');
+			assert.throws(() => { log.destroy(); });
+			assert.throws(() => { log('x'); });
+			assert.doesNotThrow(() => { log2('x'); });
 		});
 	});
 
