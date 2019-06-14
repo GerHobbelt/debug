@@ -19,8 +19,9 @@ function setup(env) {
 
 	/**
 	* Active `debug` instances.
+	* @type {Object<String, Function>}
 	*/
-	createDebug.instances = [];
+	createDebug.instances = {};
 
 	/**
 	* The currently active debug mode names, and names to skip.
@@ -64,6 +65,11 @@ function setup(env) {
 	*/
 	function createDebug(namespace) {
 		let prevTime;
+		const value = createDebug.instances[namespace];
+
+		if (value !== undefined) {
+			return value;
+		}
 
 		function debug(...args) {
 			// Disabled?
@@ -75,8 +81,7 @@ function setup(env) {
 
 			// Set `diff` timestamp
 			const curr = Number(new Date());
-			const ms = curr - (prevTime || curr);
-			self.diff = ms;
+			self.diff = curr - (prevTime || curr);
 			self.prev = prevTime;
 			self.curr = curr;
 			prevTime = curr;
@@ -131,15 +136,17 @@ function setup(env) {
 			createDebug.init(debug);
 		}
 
-		createDebug.instances.push(debug);
+		createDebug.instances[namespace] = debug;
 
 		return debug;
 	}
 
 	function destroy() {
-		const index = createDebug.instances.indexOf(this);
-		if (index !== -1) {
-			createDebug.instances.splice(index, 1);
+    let rv = false;
+    
+		if (createDebug.instances[this.namespace] !== undefined) {
+			delete createDebug.instances[this.namespace];
+      rv = true;
 		}
 
 		// nuke instance methods to ensure any subsequent call to debug~log will cause a crash!
@@ -156,7 +163,7 @@ function setup(env) {
 		};
 		this.enabled = true; // make sure debug(...) executes the instance-specific log function
 
-		return (index !== -1);
+		return rv;
 	}
 
 	function extend(namespace, delimiter) {
@@ -218,8 +225,10 @@ function setup(env) {
 			}
 		}
 
-		for (let i = 0; i < createDebug.instances.length; i++) {
-			const instance = createDebug.instances[i];
+		const keys = Object.keys(createDebug.instances);
+
+		for (let i = 0; i < keys.length; i++) {
+			const instance = createDebug.instances[keys[i]];
 			instance.enabled = createDebug.enabled(instance.namespace);
 		}
 	}
