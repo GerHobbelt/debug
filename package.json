@@ -47,6 +47,14 @@
     "rimraf": "2.6.3",
     "xo": "0.24.0"
   },
+  "peerDependencies": {
+    "supports-color": "^6.1.0"
+  },
+  "peerDependenciesMeta": {
+    "supports-color": {
+      "optional": true
+    }
+  },
   "main": "./src/index.js",
   "browser": "./src/browser.js",
   "unpkg": "./dist/debug.js",
