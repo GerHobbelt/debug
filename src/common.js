@@ -235,7 +235,7 @@ function setup(env) {
 	* @api public
 	*/
 	function enabled(name) {
-		if (name[name.length - 1] === '*') {
+		if (name === '*') {
 			return createDebug.names.length > 0;
 		}
 
