@@ -136,7 +136,6 @@ try {
  *
  *   $ DEBUG_COLORS=no DEBUG_DEPTH=10 DEBUG_SHOW_HIDDEN=enabled node script.js
  */
-
 exports.inspectOpts = Object.keys(process.env).filter(key => {
 	return /^debug_/i.test(key);
 }).reduce((obj, key) => {
@@ -170,7 +169,6 @@ exports.inspectOpts = Object.keys(process.env).filter(key => {
 /**
  * Is stdout a TTY? Colored output is enabled when `true`.
  */
-
 function useColors() {
 	return 'colors' in exports.inspectOpts ?
 		Boolean(exports.inspectOpts.colors) :
@@ -181,7 +179,6 @@ function useColors() {
  * If DEBUG_FORMAT if specified, returns it.
  * Otherwise, returns a format matching previous version's based on DEBUG_COLORS and DEBUG_HIDE_DATE
  */
-
 function getFormat() {
 	const useColors = 'colors' in exports.inspectOpts ?
 		Boolean(exports.inspectOpts.colors) :
@@ -213,7 +210,6 @@ function getDate() {
  *
  * @api public
  */
-
 function applyColor(str, bold = false) {
 	// I think doing this each time is a waste, colorCode could be stored in some variable?
 	const c = this.color;
@@ -225,7 +221,6 @@ function applyColor(str, bold = false) {
 /**
  * Invokes `util.format()` with the specified arguments and writes to stderr.
  */
-
 function log(...args) {
 	return process.stderr.write(util.format(...args) + '\n');
 }
@@ -296,15 +291,4 @@ formatters.o = function (v) {
 formatters.O = function (v) {
 	this.inspectOpts.colors = this.useColors;
 	return util.inspect(v, this.inspectOpts);
-};
-
-/**
- * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
- */
-formatters.j = function (v) {
-	try {
-		return JSON.stringify(v);
-	} catch (error) {
-		return '[UnexpectedJSONStringifyError]: ' + error.message;
-	}
 };

@@ -74,6 +74,7 @@ describe('debug', () => {
 		log.log = (...args) => messages.push(args);
 
 		log('%O %% %j', 12345, {a:1});
+		console.warn("messages:", messages[0].join(' :: '))
 
 		assert.deepStrictEqual(messages.length, 1);
 		assert(messages[0].join(' :: ').indexOf('%% {"a":1}') > 0);

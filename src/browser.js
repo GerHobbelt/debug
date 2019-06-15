@@ -244,14 +244,3 @@ function localstorage() {
 module.exports = require('./common')(exports);
 
 const {formatters} = module.exports;
-
-/**
- * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
- */
-formatters.j = function (v) {
-	try {
-		return JSON.stringify(v);
-	} catch (error) {
-		return '[UnexpectedJSONStringifyError]: ' + error.message;
-	}
-};

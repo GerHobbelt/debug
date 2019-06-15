@@ -31,27 +31,21 @@ function setup(env) {
 	createDebug.skips = [];
 
 	/**
-	* Map of special "%n" handling functions, for the debug "format" argument.
-	*
-	* Valid key names are a single, lower or upper-case letter, i.e. "n" and "N".
-	*/
-	createDebug.formatters = {};
-
-	/**
-	* Map of formatting handling functions, for output formatting.
-	* m and _time are special hardcoded keys.
-	*/
+	 * Map of `%N` formatting handling functions for output formatting.
+	 * `m` and `_time` are special hardcoded keys for `%m` and `%{timeformat}` respectively.
+ 	 *
+	 * Valid key names are a single, lower or upper-case letter, e.g. "j" and "J".
+	 */
 	createDebug.outputFormatters = {};
 
 	/**
 	 * Map %m to applying formatters to arguments
 	 */
-
 	createDebug.outputFormatters.m = function (_, args) {
 		args[0] = createDebug.coerce(args[0]);
 
 		if (typeof args[0] !== 'string') {
-			// Anything else let's inspect with %O
+			// Anything else: let's inspect with %O
 			/**
 			 * Note: This only inspects the first argument,
 			 * so if debug({foo: "bar"}, {foo: "bar"}) is passed
@@ -64,14 +58,19 @@ function setup(env) {
 		let index = 0;
 		args[0] = args[0].replace(/%([a-zA-Z%])/g, (match, format) => {
 			// If we encounter an escaped % then don't increase the array index
+			console.warn("M formatter", match, format, typeof createDebug.outputFormatters[format]);
 			if (match === '%%') {
 				return match;
 			}
 			index++;
-			const formatter = createDebug.formatters[format];
-			if (typeof formatter === 'function') {
+			// do not *recurse* %m formatters, which would b0rk input such as
+			// this:
+			//     let str = "%m";
+			//     log("%m", str);  // the INTENT is here to literal-dump `str` anyhow
+			let formatter = createDebug.outputFormatters[format];
+			if (typeof formatter === 'function' && formatter !== createDebug.outputFormatters.m) {
 				const val = args[index];
-				match = formatter.call(this, val);
+				match = formatter.call(this, format, val);
 
 				// Now we need to remove `args[index]` since it's inlined in the `format`
 				args.splice(index, 1);
@@ -86,7 +85,6 @@ function setup(env) {
 	/**
 	 * Map %+ to humanize()'s defaults (1000ms diff => "1s")
 	 */
-
 	createDebug.outputFormatters['+'] = function () {
 		return '+' + createDebug.humanize(this.diff);
 	};
@@ -94,7 +92,6 @@ function setup(env) {
 	/**
 	 * Map %d to returning milliseconds
 	 */
-
 	createDebug.outputFormatters.d = function () {
 		return '+' + this.diff + 'ms';
 	};
@@ -102,7 +99,6 @@ function setup(env) {
 	/**
 	 * Map %n to outputting namespace prefix
 	 */
-
 	createDebug.outputFormatters.n = function () {
 		return this.namespace;
 	};
@@ -110,7 +106,6 @@ function setup(env) {
 	/**
 	 * Map %_time to handling time...?
 	 */
-
 	createDebug.outputFormatters._time = function (format) {
 		// Browser doesn't have date
 		return new Date().toISOString();
@@ -122,18 +117,33 @@ function setup(env) {
 	createDebug.metaFormatters = {};
 
 	/**
-	 * Map %J* to `JSON.stringify()`
+	 * Map %j* to `JSON.stringify()`.
 	 */
+	createDebug.outputFormatters.j = function (_, v) {
+		console.warn("handle j+:", arguments);
+		try {
+			return JSON.stringify(v);
+		} catch (error) {
+			return '[UnexpectedJSONStringifyError]: ' + error.message;
+		}
+	};
 
-	createDebug.outputFormatters.J = function (v) {
-		return JSON.stringify(v);
+	/**
+	 * Map %J* to `JSON.stringify(obj, null, 2)`, i.e. formatted JSON output.
+	 */
+	createDebug.outputFormatters.J = function (_, v) {
+		console.warn("handle J:", arguments);
+		try {
+			return JSON.stringify(v, null, 2);
+		} catch (error) {
+			return '[UnexpectedJSONStringifyError]: ' + error.message;
+		}
 	};
 
 	/**
 	 * Map %c* to to `applyColor()`
 	 */
-
-	createDebug.outputFormatters.c = function (v) {
+	createDebug.outputFormatters.c = function (_, v) {
 		if (this.useColors) {
 			return this.applyColor(v);
 		} else {
@@ -144,8 +154,7 @@ function setup(env) {
 	/**
 	 * Map %C* to to `applyColor(arg, bold = true)` (node)
 	 */
-
-	createDebug.outputFormatters.C = function (v) {
+	createDebug.outputFormatters.C = function (_, v) {
 		if (this.useColors) {
 			return this.applyColor(v, true);
 		} else {
@@ -208,10 +217,12 @@ function setup(env) {
 			let formattedArgs = [];
 			let res;
 			let outputFormat = self.format; // Make a copy of the format
+			console.warn("outputFormat:", outputFormat);
 			while (res = outputFormat.match(reg)) {
 				let [matched, formatToken] = res;
 				let formatter;
 				let formatted;
+				console.warn("outputFormat MATCH:", {matched, formatToken});
 
 				// Split out the part before the matched format token
 				const split = outputFormat.slice(0, res.index);
@@ -222,35 +233,50 @@ function setup(env) {
 					formattedArgs.push(split);
 				}
 
+				// Map of meta-formatters which are applied to outputFormatters
 				const metaFormatters = [];
 				// Extract metaformatters
 				while (formatToken.length > 1 && !formatToken.startsWith('{')) {
 					const metaFormatterToken = formatToken.slice(0, 1);
 					formatToken = formatToken.slice(1);
-					metaFormatters.push(createDebug.outputFormatters[metaFormatterToken]);
+					console.warn("metaFormatterToken MATCH:", {metaFormatterToken, formatToken});
+					metaFormatters.push(metaFormatterToken);
 				}
 
 				// Not really sure how to handle time at this point
+				console.warn("formatToken FINAL:", formatToken);
 				if (formatToken.startsWith('{')) {
 					formatter = createDebug.outputFormatters._time;
 				} else {
 					formatter = createDebug.outputFormatters[formatToken];
 				}
-				if (typeof formatter === 'function') {
-					formatted = formatter.call(self, formatToken, args);
+				console.warn("formatter:", typeof formatter);
+				// When there's no formatter function, we won't be producing any output,
+				// hence we do not want that failure to go by silently as this is surely a 
+				// coding/configuration bug: throw an error.
+				if (typeof formatter !== 'function') {
+					throw new Error(`Unsupported format specification: '${matched}'`);
+				}
+				formatted = formatter.call(self, formatToken, args);
 
-					// Apply metaFormatters
-					metaFormatters.forEach(metaFormatter => {
-						if (typeof metaFormatter === 'function') {
-							formatted = metaFormatter.call(self, formatted);
-						}
-					});
+				// Apply metaFormatters
+				metaFormatters.forEach(metaFormat => {
+					const metaFormatter = createDebug.metaFormatters[metaFormat];
+					console.warn("metaFormatter:", {metaFormat, formatted, fn: typeof metaFormatter});
+  				// We don't want to silently skip absent/undefined metaFormatters
+				  // as this is quite probably a coding/configuration bug: 
+          // hence we throw an error.
+				  if (typeof metaFormatter !== 'function') {
+					  throw new Error(`Unsupported meta format: '${metaFormat}' in the format specification '${matched}'`);
+				  }
+					formatted = metaFormatter.call(self, metaFormat, formatted);
+				});
 
-					if (Array.isArray(formatted)) { // Intended to concatenate %m's args in the middle of the format
-						formattedArgs = formattedArgs.concat(formatted);
-					} else {
-						formattedArgs.push(formatted);
-					}
+				console.warn("formatted:", formatted);
+				if (Array.isArray(formatted)) { // Intended to concatenate %m's args in the middle of the format
+					formattedArgs = formattedArgs.concat(formatted);
+				} else {
+					formattedArgs.push(formatted);
 				}
 			}
 
