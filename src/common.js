@@ -42,6 +42,10 @@ function setup(env) {
 	 * Map %m to applying formatters to arguments
 	 */
 	createDebug.outputFormatters.m = function (_, args) {
+		if (!Array.isArray(args)) {
+			throw new TypeError(`Formatter %m cannot be used as a meta formatter for ${typeof args} type argument value`);
+		}
+
 		args[0] = createDebug.coerce(args[0]);
 
 		if (typeof args[0] !== 'string') {
@@ -66,7 +70,7 @@ function setup(env) {
 			// do not *recurse* %m formatters, which would b0rk input such as
 			// this:
 			//     let str = "%m";
-			//     log("%m", str);  // the INTENT is here to literal-dump `str` anyhow
+			//     log("%m", str);  // the INTENT is here to literal-dump `str` anyhow!
 			let formatter = createDebug.outputFormatters[format];
 			if (typeof formatter === 'function' && formatter !== createDebug.outputFormatters.m) {
 				const val = args[index];
@@ -255,7 +259,7 @@ function setup(env) {
 				// hence we do not want that failure to go by silently as this is surely a 
 				// coding/configuration bug: throw an error.
 				if (typeof formatter !== 'function') {
-					throw new Error(`Unsupported format specification: '${matched}'`);
+					throw new TypeError(`Unsupported format specification: '${matched}'`);
 				}
 				formatted = formatter.call(self, formatToken, args);
 
@@ -267,7 +271,7 @@ function setup(env) {
 				  // as this is quite probably a coding/configuration bug: 
           // hence we throw an error.
 				  if (typeof metaFormatter !== 'function') {
-					  throw new Error(`Unsupported meta format: '${metaFormat}' in the format specification '${matched}'`);
+					  throw new TypeError(`Unsupported meta format: '${metaFormat}' in the format specification '${matched}'`);
 				  }
 					formatted = metaFormatter.call(self, metaFormat, formatted);
 				});
@@ -309,11 +313,11 @@ function setup(env) {
     let rv = false;
     
 		if (createDebug.instances[this.namespace] !== undefined) {
-  		if (createDebug.instances[this.namespace] !== this) {
-        throw new Error('Trying to destroy an already destroyed instance.');
-      }
+	  		if (createDebug.instances[this.namespace] !== this) {
+	        	throw new Error('Trying to destroy an already destroyed instance.');
+	      	}
 			delete createDebug.instances[this.namespace];
-      rv = true;
+      		rv = true;
 		}
 
 		// nuke instance methods to ensure any subsequent call to debug~log will cause a crash!
