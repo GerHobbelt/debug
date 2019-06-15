@@ -1,4 +1,3 @@
-
 /**
  * This is the common logic for both the Node.js and web browser
  * implementations of `debug()`.
@@ -18,14 +17,14 @@ function setup(env) {
 	});
 
 	/**
-	* Active `debug` instances.
-	* @type {Object<String, Function>}
-	*/
+	 * Active `debug` instances.
+	 * @type {Object<String, Function>}
+	 */
 	createDebug.instances = {};
 
 	/**
-	* The currently active debug mode names, and names to skip.
-	*/
+	 * The currently active debug mode names, and names to skip.
+	 */
 
 	createDebug.names = [];
 	createDebug.skips = [];
@@ -33,7 +32,7 @@ function setup(env) {
 	/**
 	 * Map of `%N` formatting handling functions for output formatting.
 	 * `m` and `_time` are special hardcoded keys for `%m` and `%{timeformat}` respectively.
- 	 *
+	 *
 	 * Valid key names are a single, lower or upper-case letter, e.g. "j" and "J".
 	 */
 	createDebug.outputFormatters = {};
@@ -41,9 +40,11 @@ function setup(env) {
 	/**
 	 * Map %m to applying formatters to arguments
 	 */
-	createDebug.outputFormatters.m = function (_, args) {
+	createDebug.outputFormatters.m = function(_, args) {
 		if (!Array.isArray(args)) {
-			throw new TypeError(`Formatter %m cannot be used as a meta formatter for ${typeof args} type argument value`);
+			throw new TypeError(
+				`Formatter %m cannot be used as a meta formatter for ${typeof args} type argument value`
+			);
 		}
 
 		args[0] = createDebug.coerce(args[0]);
@@ -72,7 +73,10 @@ function setup(env) {
 			//     let str = "%m";
 			//     log("%m", str);  // the INTENT is here to literal-dump `str` anyhow!
 			let formatter = createDebug.outputFormatters[format];
-			if (typeof formatter === 'function' && formatter !== createDebug.outputFormatters.m) {
+			if (
+				typeof formatter === 'function' &&
+				formatter !== createDebug.outputFormatters.m
+			) {
 				const val = args[index];
 				match = formatter.call(this, format, val);
 
@@ -89,42 +93,42 @@ function setup(env) {
 	/**
 	 * Map %+ to humanize()'s defaults (1000ms diff => "1s")
 	 */
-	createDebug.outputFormatters['+'] = function () {
+	createDebug.outputFormatters['+'] = function() {
 		return '+' + createDebug.humanize(this.diff);
 	};
 
 	/**
 	 * Map %d to returning milliseconds
 	 */
-	createDebug.outputFormatters.d = function () {
+	createDebug.outputFormatters.d = function() {
 		return '+' + this.diff + 'ms';
 	};
 
 	/**
 	 * Map %n to outputting namespace prefix
 	 */
-	createDebug.outputFormatters.n = function () {
+	createDebug.outputFormatters.n = function() {
 		return this.namespace;
 	};
 
 	/**
 	 * Map %_time to handling time...?
 	 */
-	createDebug.outputFormatters._time = function (format) {
+	createDebug.outputFormatters._time = function(format) {
 		// Browser doesn't have date
 		return new Date().toISOString();
 	};
 
 	/**
-	* Map of meta-formatters which are applied to outputFormatters
-	*/
+	 * Map of meta-formatters which are applied to outputFormatters
+	 */
 	createDebug.metaFormatters = {};
 
 	/**
 	 * Map %j* to `JSON.stringify()`.
 	 */
-	createDebug.outputFormatters.j = function (_, v) {
-		console.warn("handle j+:", arguments);
+	createDebug.outputFormatters.j = function(_, v) {
+		console.warn('handle j+:', arguments);
 		try {
 			return JSON.stringify(v);
 		} catch (error) {
@@ -135,8 +139,8 @@ function setup(env) {
 	/**
 	 * Map %J* to `JSON.stringify(obj, null, 2)`, i.e. formatted JSON output.
 	 */
-	createDebug.outputFormatters.J = function (_, v) {
-		console.warn("handle J:", arguments);
+	createDebug.outputFormatters.J = function(_, v) {
+		console.warn('handle J:', arguments);
 		try {
 			return JSON.stringify(v, null, 2);
 		} catch (error) {
@@ -147,7 +151,7 @@ function setup(env) {
 	/**
 	 * Map %c* to to `applyColor()`
 	 */
-	createDebug.outputFormatters.c = function (_, v) {
+	createDebug.outputFormatters.c = function(_, v) {
 		if (this.useColors) {
 			return this.applyColor(v);
 		} else {
@@ -158,7 +162,7 @@ function setup(env) {
 	/**
 	 * Map %C* to to `applyColor(arg, bold = true)` (node)
 	 */
-	createDebug.outputFormatters.C = function (_, v) {
+	createDebug.outputFormatters.C = function(_, v) {
 		if (this.useColors) {
 			return this.applyColor(v, true);
 		} else {
@@ -167,16 +171,16 @@ function setup(env) {
 	};
 
 	/**
-	* Selects a color for a debug namespace
-	* @param {String} namespace The namespace string for the for the debug instance to be colored
-	* @return {Number|String} An ANSI color code for the given namespace
-	* @api private
-	*/
+	 * Selects a color for a debug namespace
+	 * @param {String} namespace The namespace string for the for the debug instance to be colored
+	 * @return {Number|String} An ANSI color code for the given namespace
+	 * @api private
+	 */
 	function selectColor(namespace) {
 		let hash = 0;
 
 		for (let i = 0; i < namespace.length; i++) {
-			hash = ((hash << 5) - hash) + namespace.charCodeAt(i);
+			hash = (hash << 5) - hash + namespace.charCodeAt(i);
 			hash |= 0; // Convert to 32bit integer
 		}
 
@@ -186,12 +190,12 @@ function setup(env) {
 	createDebug.selectColor = selectColor;
 
 	/**
-	* Create a debugger with the given `namespace`.
-	*
-	* @param {String} namespace
-	* @return {Function}
-	* @api public
-	*/
+	 * Create a debugger with the given `namespace`.
+	 *
+	 * @param {String} namespace
+	 * @return {Function}
+	 * @api public
+	 */
 	function createDebug(namespace) {
 		let prevTime;
 		const value = createDebug.instances[namespace];
@@ -221,12 +225,12 @@ function setup(env) {
 			let formattedArgs = [];
 			let res;
 			let outputFormat = self.format; // Make a copy of the format
-			console.warn("outputFormat:", outputFormat);
-			while (res = outputFormat.match(reg)) {
+			console.warn('outputFormat:', outputFormat);
+			while ((res = outputFormat.match(reg))) {
 				let [matched, formatToken] = res;
 				let formatter;
 				let formatted;
-				console.warn("outputFormat MATCH:", {matched, formatToken});
+				console.warn('outputFormat MATCH:', { matched, formatToken });
 
 				// Split out the part before the matched format token
 				const split = outputFormat.slice(0, res.index);
@@ -248,15 +252,15 @@ function setup(env) {
 				}
 
 				// Not really sure how to handle time at this point
-				console.warn("formatToken FINAL:", formatToken);
+				console.warn('formatToken FINAL:', formatToken);
 				if (formatToken.startsWith('{')) {
 					formatter = createDebug.outputFormatters._time;
 				} else {
 					formatter = createDebug.outputFormatters[formatToken];
 				}
-				console.warn("formatter:", typeof formatter);
+				console.warn('formatter:', typeof formatter);
 				// When there's no formatter function, we won't be producing any output,
-				// hence we do not want that failure to go by silently as this is surely a 
+				// hence we do not want that failure to go by silently as this is surely a
 				// coding/configuration bug: throw an error.
 				if (typeof formatter !== 'function') {
 					throw new TypeError(`Unsupported format specification: '${matched}'`);
@@ -267,17 +271,20 @@ function setup(env) {
 				metaFormatters.forEach(metaFormat => {
 					const metaFormatter = createDebug.metaFormatters[metaFormat];
 					console.warn("metaFormatter:", {metaFormat, formatted, fn: typeof metaFormatter});
-  				// We don't want to silently skip absent/undefined metaFormatters
-				  // as this is quite probably a coding/configuration bug: 
-          // hence we throw an error.
-				  if (typeof metaFormatter !== 'function') {
-					  throw new TypeError(`Unsupported meta format: '${metaFormat}' in the format specification '${matched}'`);
-				  }
+					// We don't want to silently skip absent/undefined metaFormatters
+					// as this is quite probably a coding/configuration bug:
+					// hence we throw an error.
+					if (typeof metaFormatter !== 'function') {
+						throw new TypeError(
+							`Unsupported meta format: '${metaFormat}' in the format specification '${matched}'`
+						);
+					}
 					formatted = metaFormatter.call(self, metaFormat, formatted);
 				});
 
-				console.warn("formatted:", formatted);
-				if (Array.isArray(formatted)) { // Intended to concatenate %m's args in the middle of the format
+				console.warn('formatted:', formatted);
+				if (Array.isArray(formatted)) {
+					// Intended to concatenate %m's args in the middle of the format
 					formattedArgs = formattedArgs.concat(formatted);
 				} else {
 					formattedArgs.push(formatted);
@@ -310,20 +317,22 @@ function setup(env) {
 	}
 
 	function destroy() {
-    let rv = false;
-    
+		let rv = false;
+
 		if (createDebug.instances[this.namespace] !== undefined) {
-	  		if (createDebug.instances[this.namespace] !== this) {
-	        	throw new Error('Trying to destroy an already destroyed instance.');
-	      	}
+			if (createDebug.instances[this.namespace] !== this) {
+				throw new Error('Trying to destroy an already destroyed instance.');
+			}
 			delete createDebug.instances[this.namespace];
-      		rv = true;
+			rv = true;
 		}
 
 		// nuke instance methods to ensure any subsequent call to debug~log will cause a crash!
-		
+
 		function mkmsg(fn) {
-			throw new Error(fn + '() invocated after debug instance has been destroyed');
+			throw new Error(
+				fn + '() invocated after debug instance has been destroyed'
+			);
 		}
 
 		this.log = function logInvocatedAfterBeingDestroyed() {
@@ -338,18 +347,22 @@ function setup(env) {
 	}
 
 	function extend(namespace, delimiter) {
-		const newDebug = createDebug(this.namespace + (typeof delimiter === 'undefined' ? ':' : delimiter) + namespace);
+		const newDebug = createDebug(
+			this.namespace +
+				(typeof delimiter === 'undefined' ? ':' : delimiter) +
+				namespace
+		);
 		newDebug.log = this.log;
 		return newDebug;
 	}
 
 	/**
-	* Enables a debug mode by namespaces. This can include modes
-	* separated by a colon and wildcards.
-	*
-	* @param {String} namespaces
-	* @api public
-	*/
+	 * Enables a debug mode by namespaces. This can include modes
+	 * separated by a colon and wildcards.
+	 *
+	 * @param {String} namespaces
+	 * @api public
+	 */
 	function enable(namespaces, options) {
 		options = options || {};
 
@@ -372,7 +385,9 @@ function setup(env) {
 				continue;
 			}
 
-			namespaces = split[i].replace(/[.?$^()+{}[\]|/\\]/g, '\\$&').replace(/\*/g, '.*?');
+			namespaces = split[i]
+				.replace(/[.?$^()+{}[\]|/\\]/g, '\\$&')
+				.replace(/\*/g, '.*?');
 
 			if (namespaces[0] === '-') {
 				namespaces = namespaces.substr(1);
@@ -405,15 +420,17 @@ function setup(env) {
 	}
 
 	/**
-	* Disable debug output.
-	*
-	* @return {String} namespaces
-	* @api public
-	*/
+	 * Disable debug output.
+	 *
+	 * @return {String} namespaces
+	 * @api public
+	 */
 	function disable() {
 		const namespaces = [
 			...createDebug.names.map(toNamespace),
-			...createDebug.skips.map(toNamespace).map(namespace => '-' + namespace)
+			...createDebug.skips
+				.map(toNamespace)
+				.map(namespace => '-' + namespace)
 		].join(',');
 		createDebug.names = [];
 		createDebug.skips = [];
@@ -421,12 +438,12 @@ function setup(env) {
 	}
 
 	/**
-	* Returns true if the given mode name is enabled, false otherwise.
-	*
-	* @param {String} name
-	* @return {Boolean}
-	* @api public
-	*/
+	 * Returns true if the given mode name is enabled, false otherwise.
+	 *
+	 * @param {String} name
+	 * @return {Boolean}
+	 * @api public
+	 */
 	function enabled(name) {
 		if (name === '*') {
 			return createDebug.names.length > 0;
@@ -448,25 +465,26 @@ function setup(env) {
 	}
 
 	/**
-	* Convert regexp to namespace
-	*
-	* @param {RegExp} regxep
-	* @return {String} namespace
-	* @api private
-	*/
+	 * Convert regexp to namespace
+	 *
+	 * @param {RegExp} regxep
+	 * @return {String} namespace
+	 * @api private
+	 */
 	function toNamespace(regexp) {
-		return regexp.toString()
+		return regexp
+			.toString()
 			.substring(2, regexp.toString().length - 2)
 			.replace(/\.\*\?$/, '*');
 	}
 
 	/**
-	* Coerce `val`.
-	*
-	* @param {Mixed} val
-	* @return {Mixed}
-	* @api private
-	*/
+	 * Coerce `val`.
+	 *
+	 * @param {Mixed} val
+	 * @return {Mixed}
+	 * @api private
+	 */
 	function coerce(val) {
 		if (val instanceof Error) {
 			return val.stack || (val.name + ': ' + val.message);

@@ -6,7 +6,7 @@ const debug = require('./src');
 describe('debug', () => {
 	beforeEach(() => {
 		// debug.enable('', {
-		// 	append: false
+		//  append: false
 		// });
 		debug.disable();
 	});
@@ -73,8 +73,8 @@ describe('debug', () => {
 		const messages = [];
 		log.log = (...args) => messages.push(args);
 
-		log('%O %% %j', 12345, {a:1});
-		console.warn("messages:", messages[0].join(' :: '))
+		log('%O %% %j', 12345, { a: 1 });
+		console.warn('messages:', messages[0].join(' :: '));
 
 		assert.deepStrictEqual(messages.length, 1);
 		assert(messages[0].join(' :: ').indexOf('%% {"a":1}') > 0);
@@ -132,15 +132,25 @@ describe('debug', () => {
 
 		it('accepts namespace names with embedded dots and other regex chars', () => {
 			function test(ns, sollwert) {
-				debug.enable('-a, -b, -aa, -ab, -ad, -ae, -abc, ' + ns, {append: false});
+				debug.enable('-a, -b, -aa, -ab, -ad, -ae, -abc, ' + ns, {
+					append: false
+				});
 				const ist = {
 					names: debug.names.join('\n'),
 					skips: debug.skips.join('\n')
 				};
-				assert.deepStrictEqual(ist, {
-					names: '/^' + sollwert + '$/',
-					skips: '/^a$/\n/^b$/\n/^aa$/\n/^ab$/\n/^ad$/\n/^ae$/\n/^abc$/'
-				}, 'namespace \'' + ns + '\' should be treated as a literal string, i.e. /' + sollwert + '/');
+				assert.deepStrictEqual(
+					ist,
+					{
+						names: '/^' + sollwert + '$/',
+						skips: '/^a$/\n/^b$/\n/^aa$/\n/^ab$/\n/^ad$/\n/^ae$/\n/^abc$/'
+					},
+					"namespace '" +
+						ns +
+						"' should be treated as a literal string, i.e. /" +
+						sollwert +
+						'/'
+				);
 			}
 
 			[
@@ -148,14 +158,17 @@ describe('debug', () => {
 				'a\\s=a\\\\s',
 				'$a$=\\$a\\$, ^a^b^=\\^a\\^b\\^',
 				'*a*=.*?a.*?, a+=a\\+, a|b=a\\|b'
-			].join(', ').split(', ').forEach(s => {
-				if (!s) {
-					return;
-				}
+			]
+				.join(', ')
+				.split(', ')
+				.forEach(s => {
+					if (!s) {
+						return;
+					}
 
-				s = s.split('=');
-				test(s[0], s[1]);
-			});
+					s = s.split('=');
+					test(s[0], s[1]);
+				});
 		});
 
 		it('should avoid namespace conflict', () => {
@@ -296,26 +309,46 @@ describe('debug', () => {
 			log.log = (a) => console.warn('a', this.namespace, '-->', a);
 			const alt = log.extend('bar');
 
-			assert.doesNotThrow(() => { log('x'); });
-			assert.doesNotThrow(() => { alt('x'); });
+			assert.doesNotThrow(() => {
+				log('x');
+			});
+			assert.doesNotThrow(() => {
+				alt('x');
+			});
 			// destroying one instance should not impact the other instance:
 			assert(log.destroy() === true);
-			assert.throws(() => { log('x'); });
-			assert.doesNotThrow(() => { alt('x'); });
-			assert.throws(() => { log.extend('x'); });
+			assert.throws(() => {
+				log('x');
+			});
+			assert.doesNotThrow(() => {
+				alt('x');
+			});
+			assert.throws(() => {
+				log.extend('x');
+			});
 			// can still invoke `destroy()` on the nuked instance though:
 			assert(log.destroy() === false);
-			assert.throws(() => { log('x'); });
-			assert.doesNotThrow(() => { alt('x'); });
-			assert.throws(() => { log.extend('x'); });
+			assert.throws(() => {
+				log('x');
+			});
+			assert.doesNotThrow(() => {
+				alt('x');
+			});
+			assert.throws(() => {
+				log.extend('x');
+			});
 			// will barf hairball when destroyed namespace has got a fresh instance
 			// and you're still trying to nuke the old already-destroyed one:
 			const log2 = debug('foo');
-			assert.throws(() => { log.destroy(); });
-			assert.throws(() => { log('x'); });
-			assert.doesNotThrow(() => { log2('x'); });
+			assert.throws(() => {
+				log.destroy();
+			});
+			assert.throws(() => {
+				log('x');
+			});
+			assert.doesNotThrow(() => {
+				log2('x');
+			});
 		});
 	});
-
 });
-

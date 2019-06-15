@@ -136,43 +136,45 @@ try {
  *
  *   $ DEBUG_COLORS=no DEBUG_DEPTH=10 DEBUG_SHOW_HIDDEN=enabled node script.js
  */
-exports.inspectOpts = Object.keys(process.env).filter(key => {
-	return /^debug_/i.test(key);
-}).reduce((obj, key) => {
-	// Camel-case
-	const prop = key
-		.substring(6)
-		.toLowerCase()
-		.replace(/_([a-z])/g, (_, k) => {
-			return k.toUpperCase();
-		});
+exports.inspectOpts = Object.keys(process.env)
+	.filter(key => {
+		return /^debug_/i.test(key);
+	})
+	.reduce((obj, key) => {
+		// Camel-case
+		const prop = key
+			.substring(6)
+			.toLowerCase()
+			.replace(/_([a-z])/g, (_, k) => {
+				return k.toUpperCase();
+			});
 
-	// Coerce string value into JS value
-	let val = process.env[key];
-	if (/^(yes|on|true|enabled)$/i.test(val)) {
-		val = true;
-	} else if (/^(no|off|false|disabled)$/i.test(val)) {
-		val = false;
-	} else if (val === 'null') {
-		val = null;
-	} else {
-		const asNumber = Number(val);
-		if (!isNaN(asNumber)) {
-			val = asNumber;
+		// Coerce string value into JS value
+		let val = process.env[key];
+		if (/^(yes|on|true|enabled)$/i.test(val)) {
+			val = true;
+		} else if (/^(no|off|false|disabled)$/i.test(val)) {
+			val = false;
+		} else if (val === 'null') {
+			val = null;
+		} else {
+			const asNumber = Number(val);
+			if (!isNaN(asNumber)) {
+				val = asNumber;
+			}
 		}
-	}
 
-	obj[prop] = val;
-	return obj;
-}, {});
+		obj[prop] = val;
+		return obj;
+	}, {});
 
 /**
  * Is stdout a TTY? Colored output is enabled when `true`.
  */
 function useColors() {
-	return 'colors' in exports.inspectOpts ?
-		Boolean(exports.inspectOpts.colors) :
-		tty.isatty(process.stderr.fd);
+	return 'colors' in exports.inspectOpts
+		? Boolean(exports.inspectOpts.colors)
+		: tty.isatty(process.stderr.fd);
 }
 
 /**
@@ -180,9 +182,10 @@ function useColors() {
  * Otherwise, returns a format matching previous version's based on DEBUG_COLORS and DEBUG_HIDE_DATE
  */
 function getFormat() {
-	const useColors = 'colors' in exports.inspectOpts ?
-		Boolean(exports.inspectOpts.colors) :
-		tty.isatty(process.stderr.fd);
+	const useColors =
+		'colors' in exports.inspectOpts
+			? Boolean(exports.inspectOpts.colors)
+			: tty.isatty(process.stderr.fd);
 
 	if ('format' in exports.inspectOpts) {
 		return exports.inspectOpts.format;
@@ -235,7 +238,7 @@ function save(namespaces) {
 	// Webpack DefinePlugin will replace "process.env.DEBUG" with a constant expression, e.g. "true." To
 	// avoid this issue, we need to alias "process.env" to a variable, so that webpack DefinePlugin will
 	// not create a syntax error by producing the invalid statement "false = namespaces;"
-	const {env} = process;
+	const { env } = process;
 	if (namespaces) {
 		env.DEBUG = namespaces;
 	} else {
@@ -274,12 +277,12 @@ function init(debug) {
 
 module.exports = require('./common')(exports);
 
-const {formatters} = module.exports;
+const { formatters } = module.exports;
 
 /**
  * Map %o to `util.inspect()`, all on a single line.
  */
-formatters.o = function (v) {
+formatters.o = function(v) {
 	this.inspectOpts.colors = this.useColors;
 	return util.inspect(v, this.inspectOpts)
 		.replace(/\s*\n\s*/g, ' ');
@@ -288,7 +291,7 @@ formatters.o = function (v) {
 /**
  * Map %O to `util.inspect()`, allowing multiple lines if needed.
  */
-formatters.O = function (v) {
+formatters.O = function(v) {
 	this.inspectOpts.colors = this.useColors;
 	return util.inspect(v, this.inspectOpts);
 };

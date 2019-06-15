@@ -27,6 +27,9 @@ lint:
 fix:
 	xo --fix
 
+prettier:
+	prettier --tab-width 2 --write *.js src/*.js
+
 test-node:
 	nyc mocha -- test.js
 
